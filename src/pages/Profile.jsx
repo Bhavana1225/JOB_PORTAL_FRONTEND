@@ -1,55 +1,81 @@
-import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
-import "../styles/style.css";
+import React, { useState, useEffect } from "react";
+import { api } from "../api";
 
 const Profile = () => {
-  const { user, updateUser } = useUser();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    contactDetails: user?.contactDetails || "",
-    workHistory: user?.workHistory || "",
-    certifications: user?.certifications || "",
-    education: user?.education || ""
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    role: "",
   });
 
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/auth/profile");
+        setProfile(res.data);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setProfile({
+      ...profile,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleSave = () => {
-    updateUser(formData);
-    setIsEditing(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await api.put("/auth/profile", profile);
+      setMessage("Profile updated successfully!");
+      setProfile(res.data);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setMessage("Failed to update profile. Please try again.");
+    }
   };
 
   return (
-    <div className="profile-container">
+    <div className="container">
       <h2>My Profile</h2>
-
-      {["name", "email", "contactDetails", "workHistory", "certifications", "education"].map((field) => (
-        <div className="profile-field" key={field}>
-          <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-          {isEditing ? (
-            field === "email" || field === "name" ? (
-              <input type={field === "email" ? "email" : "text"} name={field} value={formData[field]} onChange={handleChange} />
-            ) : (
-              <textarea name={field} value={formData[field]} onChange={handleChange}></textarea>
-            )
-          ) : (
-            <p>{user?.[field] || "Not provided"}</p>
-          )}
-        </div>
-      ))}
-
-      <div className="profile-actions">
-        {isEditing ? (
-          <button onClick={handleSave} className="btn btn-save">Save Profile</button>
-        ) : (
-          <button onClick={() => setIsEditing(true)} className="btn btn-edit">Edit Profile</button>
-        )}
-      </div>
+      {message && <p>{message}</p>}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="name"
+          value={profile.name}
+          onChange={handleChange}
+          placeholder="Full Name"
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          value={profile.email}
+          onChange={handleChange}
+          placeholder="Email"
+          required
+        />
+        <select
+          name="role"
+          value={profile.role}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Role</option>
+          <option value="jobseeker">Job Seeker</option>
+          <option value="employer">Employer</option>
+        </select>
+        <button type="submit">Update Profile</button>
+      </form>
     </div>
   );
 };

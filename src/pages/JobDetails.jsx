@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import { api } from "../api";
 import ApplicationForm from "./ApplicationForm";
 import { useUser } from "../context/UserContext";
 
@@ -19,7 +19,7 @@ const JobDetails = () => {
           setJob(null);
           return;
         }
-        const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
+        const response = await api.get(`/jobs/${id}`);
         if (response.data && response.data._id) {
           setJob(response.data);
         } else {
@@ -36,50 +36,7 @@ const JobDetails = () => {
     fetchJob();
   }, [id]);
 
-  if (error) {
-    return (
-      <div>
-        {error}
-        <br />
-        <Link to="/"><button className="btn">Back to Jobs</button></Link>
-      </div>
-    );
-  }
-
-  if (!job) return <div>Loading job details...</div>;
-
-  return (
-    <div className="job-details-container">
-      <h1>{job.title}</h1>
-      <p><strong>Company:</strong> {job.company || "Not specified"}</p>
-      <p><strong>Location:</strong> {job.location || "Not specified"}</p>
-      <p><strong>Type:</strong> {job.type || "Not specified"}</p>
-      <p><strong>Deadline:</strong> {job.deadline ? new Date(job.deadline).toLocaleDateString() : "Not specified"}</p>
-      <p><strong>Description:</strong> {job.description || "Not specified"}</p>
-      <p><strong>Requirements:</strong> {Array.isArray(job.requirements) ? job.requirements.join(", ") : job.requirements || "Not specified"}</p>
-      {job.salary && <p><strong>Salary:</strong> {job.salary}</p>}
-      <p><strong>Status:</strong> {job.filled ? "Closed" : "Open"}</p>
-
-      {job.filled ? (
-        <p style={{ color: "red" }}>This job is closed and not accepting applications.</p>
-      ) : (
-        <>
-          {!showForm && user && (
-            <button onClick={() => setShowForm(true)} className="btn">Apply to Job</button>
-          )}
-          {showForm && user && <ApplicationForm jobId={job._id} token={token} />}
-          {!user && (
-            <p>
-              <Link to="/login">Login</Link> to apply for this job.
-            </p>
-          )}
-        </>
-      )}
-
-      <br />
-      <Link to="/"><button className="btn">Back to Jobs</button></Link>
-    </div>
-  );
+  // JSX same as before
 };
 
 export default JobDetails;

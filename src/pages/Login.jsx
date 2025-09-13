@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useUser } from "../context/UserContext";
 import { useNavigate, Link } from "react-router-dom";
+import { api } from "../api";
 import "../styles/style.css";
 
 const Login = () => {
@@ -22,7 +22,7 @@ const Login = () => {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password, role });
+      const res = await api.post("/auth/login", { email, password, role });
       const userData = res.data;
 
       if (!userData.token) {
@@ -37,6 +37,7 @@ const Login = () => {
 
       navigate(userData.role === "employer" ? "/dashboard" : "/applications");
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.message || "Login failed: Invalid credentials");
     }
   };
@@ -45,16 +46,33 @@ const Login = () => {
     <div className="auth-container">
       <h2>Login</h2>
       {error && <p className="error">{error}</p>}
+
       <form onSubmit={handleLogin} className="auth-form">
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         <select value={role} onChange={(e) => setRole(e.target.value)} required>
           <option value="">Select Role</option>
           <option value="jobseeker">Job Seeker</option>
           <option value="employer">Employer</option>
         </select>
-        <button type="submit" className="btn">Login</button>
+
+        <button type="submit" className="btn">
+          Login
+        </button>
       </form>
+
       <p className="auth-footer">
         Don't have an account? <Link to="/register">Register here</Link>
       </p>

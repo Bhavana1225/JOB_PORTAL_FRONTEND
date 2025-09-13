@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { api } from "../api";
+import "../styles/style.css";
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
@@ -10,8 +11,8 @@ const JobList = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/jobs");
-        setJobs(response.data);
+        const res = await api.get("/jobs");
+        setJobs(res.data || []);
         setError("");
       } catch (err) {
         console.error("Error fetching jobs:", err);
@@ -24,18 +25,25 @@ const JobList = () => {
   }, []);
 
   if (loading) return <div>Loading jobs...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div className="error">{error}</div>;
 
   return (
-    <div>
+    <div className="joblist-container">
       <h1>Available Jobs</h1>
-      <ul>
-        {jobs.map((job) => (
-          <li key={job._id}>
-            <Link to={`/jobs/${job._id}`}>{job.title}</Link> - {job.location}
-          </li>
-        ))}
-      </ul>
+      {jobs.length === 0 ? (
+        <p>No jobs available at the moment.</p>
+      ) : (
+        <ul className="joblist">
+          {jobs.map((job) => (
+            <li key={job._id} className="job-item">
+              <Link to={`/jobs/${job._id}`} className="job-link">
+                {job.title}
+              </Link>{" "}
+              - {job.location || "Location not specified"}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

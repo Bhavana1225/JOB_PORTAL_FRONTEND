@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import API from "../utils/api";
 import { useUser } from "../context/UserContext";
 
 function Homepage() {
@@ -15,7 +15,7 @@ function Homepage() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/jobs");
+        const res = await API.get("/api/jobs");
         setJobs(res.data || []);
       } catch (err) {
         console.error(err);
@@ -30,7 +30,9 @@ function Homepage() {
   const filteredJobs = jobs.filter(job => {
     const matchTitle = job.title?.toLowerCase().includes(searchTitle.toLowerCase());
     const matchLocation = job.location?.toLowerCase().includes(searchLocation.toLowerCase());
-    const matchDeadline = searchDeadline ? job.deadline && new Date(job.deadline).toISOString().split("T")[0] === searchDeadline : true;
+    const matchDeadline = searchDeadline
+      ? job.deadline && new Date(job.deadline).toISOString().split("T")[0] === searchDeadline
+      : true;
     return matchTitle && matchLocation && matchDeadline;
   });
 

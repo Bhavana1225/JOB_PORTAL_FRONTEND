@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../api";
 
 const ApplicationForm = ({ jobId, token }) => {
   const [formData, setFormData] = useState({ name: "", email: "", resume: null });
@@ -11,14 +11,13 @@ const ApplicationForm = ({ jobId, token }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const data = new FormData();
       data.append("name", formData.name);
       data.append("email", formData.email);
       data.append("resume", formData.resume);
 
-      await axios.post(`http://localhost:5000/api/applications/${jobId}/apply`, data, {
+      await api.post(`/applications/${jobId}/apply`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

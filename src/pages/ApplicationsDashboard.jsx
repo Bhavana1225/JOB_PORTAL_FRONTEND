@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useUser } from "../context/UserContext";
 import { Link } from "react-router-dom";
-import "../styles/style.css";
+import { api } from "../api";
+import { useUser } from "../context/UserContext";
 
 const ApplicationsDashboard = () => {
   const { user, token } = useUser();
@@ -10,8 +9,6 @@ const ApplicationsDashboard = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingApp, setEditingApp] = useState(null);
-  const [newResume, setNewResume] = useState(null);
 
   useEffect(() => {
     if (!user || !token) return;
@@ -19,13 +16,13 @@ const ApplicationsDashboard = () => {
     const fetchData = async () => {
       try {
         if (user.role === "jobseeker") {
-          const res = await axios.get("http://localhost:5000/api/applications/user", {
-            headers: { Authorization: `Bearer ${token}` },
+          const res = await api.get("/applications/user", {
+            headers: { Authorization: `Bearer ${token}` }
           });
           setApplications(res.data || []);
         } else if (user.role === "employer") {
-          const res = await axios.get("http://localhost:5000/api/jobs/employer", {
-            headers: { Authorization: `Bearer ${token}` },
+          const res = await api.get("/jobs/employer", {
+            headers: { Authorization: `Bearer ${token}` }
           });
           setJobs(res.data || []);
         }
@@ -43,37 +40,13 @@ const ApplicationsDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/applications/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete(`/applications/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setApplications(applications.filter((app) => app._id !== id));
+      setApplications(applications.filter(app => app._id !== id));
     } catch (err) {
       console.error(err);
       alert("Failed to delete application");
-    }
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!editingApp) return;
-
-    const formData = new FormData();
-    formData.append("name", editingApp.name);
-    formData.append("email", editingApp.email);
-    if (newResume) formData.append("resume", newResume);
-
-    try {
-      const res = await axios.put(
-        `http://localhost:5000/api/applications/${editingApp._id}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setApplications(applications.map(app => app._id === editingApp._id ? res.data.application : app));
-      setEditingApp(null);
-      setNewResume(null);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update application");
     }
   };
 
@@ -108,7 +81,6 @@ const ApplicationsDashboard = () => {
                   <td>{new Date(app.createdAt).toLocaleDateString()}</td>
                   <td>{app.resume ? <a href={`http://localhost:5000/uploads/${app.resume}`} target="_blank" rel="noopener noreferrer">View Resume</a> : "N/A"}</td>
                   <td>
-                    <button onClick={() => setEditingApp(app)} className="btn">Edit</button>
                     <button onClick={() => handleDelete(app._id)} className="btn">Delete</button>
                   </td>
                 </tr>
@@ -116,20 +88,6 @@ const ApplicationsDashboard = () => {
             </tbody>
           </table>
         )}
-
-        {editingApp && (
-          <div style={{ marginTop: "20px" }}>
-            <h3>Edit Application for: {editingApp.job?.title}</h3>
-            <form onSubmit={handleEditSubmit}>
-              <input type="text" value={editingApp.name} onChange={e => setEditingApp({ ...editingApp, name: e.target.value })} required />
-              <input type="email" value={editingApp.email} onChange={e => setEditingApp({ ...editingApp, email: e.target.value })} required />
-              <input type="file" accept=".pdf,.doc,.docx" onChange={e => setNewResume(e.target.files[0])} />
-              <button type="submit" className="btn">Update Application</button>
-              <button type="button" onClick={() => setEditingApp(null)} className="btn">Cancel</button>
-            </form>
-          </div>
-        )}
-
         <Link to="/"><button className="btn">Back to Jobs</button></Link>
       </div>
     );
