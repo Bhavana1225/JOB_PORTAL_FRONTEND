@@ -8,7 +8,7 @@ import "./styles/style.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <UserProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/JOB_PORTAL_FRONTEND">
         <App />
       </BrowserRouter>
     </UserProvider>
