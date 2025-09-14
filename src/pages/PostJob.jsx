@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useUser } from "../context/UserContext";
 import "../styles/style.css";
 
 const PostJob = () => {
   const navigate = useNavigate();
+  const { token } = useUser();   // ✅ use context instead of localStorage
   const [jobData, setJobData] = useState({
     title: "",
     description: "",
@@ -14,6 +16,7 @@ const PostJob = () => {
     type: "Full-time",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,9 +26,9 @@ const PostJob = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         setError("You must be logged in to post a job.");
         return;
@@ -47,6 +50,8 @@ const PostJob = () => {
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || "Failed to post job");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,8 +124,8 @@ const PostJob = () => {
           />
         </div>
 
-        <button type="submit" className="btn">
-          Post Job
+        <button type="submit" className="btn" disabled={loading}>
+          {loading ? "Posting..." : "Post Job"}
         </button>
       </form>
     </div>

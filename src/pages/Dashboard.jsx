@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "../context/UserContext";
-import API from "../utils/api";
+import { api } from "../api";
 import "../styles/style.css";
 
 const Dashboard = () => {
